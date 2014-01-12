@@ -1,0 +1,21 @@
+{
+	"name": "midi-events",
+	"version": "0.1.0",
+	"description": "Module to simplify Web MIDI API.",
+	"author": "Mikael Jorhult <mikael@jorhult.se> (http://jorhult.se)",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/mikaeljorhult/midi-events"
+	},
+	"license": {
+		"type": "MIT",
+		"url": "http://mikaeljorhult.mit-license.org/"
+	},
+	"devDependencies": {
+		"grunt": "0.4.x",
+		"load-grunt-tasks": "0.2.x",
+		"grunt-contrib-concat": "0.3.x",
+		"grunt-contrib-uglify": "0.2.x",
+		"grunt-contrib-jshint": "0.7.x"
+	}
+}
