@@ -1,5 +1,3 @@
-/* global define */
-
 define( [], function() {
 	var requestMIDI = navigator.requestMIDIAccess(),
 		MIDIAccess;

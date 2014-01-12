@@ -1,0 +1,8 @@
+{
+	"globals": {
+		"require": true,
+		"module": true,
+		"define": true,
+		"navigator": true
+	}
+}
