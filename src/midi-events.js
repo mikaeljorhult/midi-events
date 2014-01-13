@@ -16,7 +16,7 @@ define( [], function() {
 			MIDIEvents.trigger( 'connected' );
 			
 			// Trigger callback.
-			callback();
+			if ( typeof callback === 'function' ) { callback(); }
 		}, requestFailure );
 	}
 	
