@@ -15,23 +15,23 @@ module.exports = function( grunt ) {
 				' * @license <%= pkg.repository.url %> <%= pkg.license.type %>\n' +
 				'*/\n'
 		},
+		requirejs: {
+			compile: {
+				options: {
+					name: 'midi-events',
+					baseUrl: 'src/',
+					out: 'dist/midi-events.js'
+				}
+			}
+		},
 		concat: {
 			options: {
 				banner: '<%= meta.banner %>'
 			},
 			dist: {
 				files: {
-					'dist/midi-events.js': 'src/midi-events.js'
-				}
-			}
-		},
-		uglify: {
-			options: {
-				banner: '<%= meta.banner %>'
-			},
-			dist: {
-				files: {
-					'dist/midi-events.min.js': 'src/midi-events.js'
+					'dist/midi-events.dev.js': 'src/midi-events.js',
+					'dist/midi-events.js': 'dist/midi-events.js'
 				}
 			}
 		},
@@ -50,7 +50,7 @@ module.exports = function( grunt ) {
 	grunt.registerTask( 'default', [ 'jshint' ]);
 	grunt.registerTask( 'release', [
 		'jshint',
-		'concat',
-		'uglify'
+		'requirejs',
+		'concat'
 	] );
 };

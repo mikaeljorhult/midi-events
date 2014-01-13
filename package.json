@@ -21,6 +21,7 @@
 		"load-grunt-tasks": "0.2.x",
 		"grunt-contrib-concat": "0.3.x",
 		"grunt-contrib-uglify": "0.2.x",
-		"grunt-contrib-jshint": "0.7.x"
+		"grunt-contrib-jshint": "0.7.x",
+		"grunt-contrib-requirejs": "0.4.x"
 	}
 }
