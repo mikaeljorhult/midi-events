@@ -41,7 +41,8 @@ module.exports = function( grunt ) {
 			},
 			all: [
 				'Gruntfile.js',
-				'src/midi-events.js'
+				'src/midi-events.js',
+				'src/PubSub.js'
 			]
 		}
 	} );
