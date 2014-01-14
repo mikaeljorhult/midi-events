@@ -6,6 +6,11 @@ define( [ 'PubSub' ], function( PubSub ) {
 		requestMIDI = navigator.requestMIDIAccess(),
 		MIDIAccess = null;
 	
+	/**
+	 * Get all input ports.
+	 * 
+	 * @param callback function Callback to run when access to MIDI has been established.
+	 */
 	function connect( callback ) {
 		// Request access to MIDI I/O.
 		requestMIDI.then( function( access ) {
@@ -19,22 +24,48 @@ define( [ 'PubSub' ], function( PubSub ) {
 		}, requestFailure );
 	}
 	
+	/**
+	 * Get all input ports.
+	 * 
+	 * @return array All available MIDI inputs.
+	 */
 	function inputs() {
 		return MIDIAccess.inputs();
 	}
 	
+	/**
+	 * Get all output ports.
+	 * 
+	 * @return array All available MIDI inputs.
+	 */
 	function outputs() {
 		return MIDIAccess.outputs();
 	}
 	
+	/**
+	 * Setup listeners for specified inputs.
+	 * 
+	 * @param input mixed Input ports to monitor for messages.
+	 */
 	function listen( input ) {
 		assignListener( input, portListener );
 	}
 	
+	/**
+	 * Remove listeners for specified inputs.
+	 * 
+	 * @param input mixed Input ports to stop monitoring for messages.
+	 */
 	function unlisten( input ) {
 		assignListener( input, function(){} );
 	}
 	
+	/**
+	 * Add listeners to specified inputs.
+	 * 
+	 * @param input mixed Input ports to assign listener to.
+	 * @param listener function Callback to run when messages is received.
+	 */
 	function assignListener( input, listener ) {
 		var ports = getPorts( input ),
 			length = ports.length,
@@ -46,10 +77,31 @@ define( [ 'PubSub' ], function( PubSub ) {
 		}
 	}
 	
+	/**
+	 * Handle event sent from MIDI port.
+	 * 
+	 * @param midiEvent object Event sent from MIDI port.
+	 */
 	function portListener( midiEvent ) {
+		var message = {};
+		
+		message = {
+			note: midiEvent.data[ 1 ],
+			velocity: midiEvent.data[ 2 ]
+		};
+		
 		console.log( midiEvent );
+		console.log( message );
+		
+		// PubSub.trigger();
 	}
 	
+	/**
+	 * Resolve ports from requested input.
+	 * 
+	 * @param input mixed Input ports to resolve.
+	 * @return array Resolved ports, or empty array.
+	 */
 	function getPorts( input ) {
 		var indexes = [],
 			ports = [],
@@ -83,7 +135,11 @@ define( [ 'PubSub' ], function( PubSub ) {
 		return ports;
 	}
 	
-	// Request access to MIDI.
+	/**
+	 * Handle if request for MIDI access failed.
+	 * 
+	 * @param error object Generated error object.
+	 */
 	function requestFailure( error ) {
 		console.log( error );
 	}
