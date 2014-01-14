@@ -67,7 +67,7 @@ define( [ 'PubSub' ], function( PubSub ) {
 	 * @param listener function Callback to run when messages is received.
 	 */
 	function assignListener( input, listener ) {
-		var ports = getPorts( input ),
+		var ports = getInputPorts( input ),
 			length = ports.length,
 			i;
 		
@@ -124,7 +124,7 @@ define( [ 'PubSub' ], function( PubSub ) {
 	 * @param input mixed Input ports to resolve.
 	 * @return array Resolved ports, or empty array.
 	 */
-	function getPorts( input ) {
+	function getInputPorts( input ) {
 		var indexes = [],
 			ports = [],
 			MIDIInputs = inputs(),
@@ -158,6 +158,77 @@ define( [ 'PubSub' ], function( PubSub ) {
 	}
 	
 	/**
+	 * Resolve ports from requested output.
+	 * 
+	 * @param input mixed Output ports to resolve.
+	 * @return array Resolved ports, or empty array.
+	 */
+	function getOutputPorts( output ) {
+		var indexes = [],
+			ports = [],
+			MIDIOutputs = outputs(),
+			length = MIDIOutputs.length,
+			i;
+		
+		if ( typeof output === 'number' ) {
+			// A single index is requested. Make Array from it.
+			indexes = [ output ];
+		} else if ( Object.prototype.toString.call( output ) === '[object Array]' ) {
+			// An array of indexes is requested. Add all of them.
+			indexes = output;
+		} else if ( typeof output === 'string' && output.toLowerCase() === 'all' ) {
+			// All ports requested. Assign them directly.
+			ports = outputs();
+		}
+		
+		// If there are indexes not saved in ports variable.
+		if ( indexes.length > 0 ) {
+			// Go through each index and add corresponding input to array.
+			for ( i = 0; i < length; i++ ) {
+				// Make sure that input exists.
+				if ( typeof indexes[ i ] === 'number' && indexes[ i ] < length ) {
+					ports.push( MIDIOutputs[ indexes[ i ] ] );
+				}
+			}
+		}
+		
+		// Return all ports.
+		return ports;
+	}
+	
+	/**
+	 * Resolve ports from requested output.
+	 * 
+	 * @param output mixed Output ports to send message to.
+	 * @param message object MIDI message to send.
+	 */
+	function send( output, message ) {
+		var ports = getOutputPorts( output ),
+			length = ports.length,
+			i;
+		
+		// Convert string values to numeric.
+		switch ( message.type ) {
+			case 'noteon':
+				message.type = 144;
+				break;
+			
+			case 'noteoff':
+				message.type = 128;
+				break;
+		}
+		
+		// Send message to requested ports.
+		for ( i = 0; i < length; i++ ) {
+			ports[ i ].send( [
+				message.type,
+				message.note,
+				message.value
+			] );
+		}
+	}
+	
+	/**
 	 * Handle if request for MIDI access failed.
 	 * 
 	 * @param error object Generated error object.
@@ -167,15 +238,18 @@ define( [ 'PubSub' ], function( PubSub ) {
 	}
 	
 	// Add methods to MIDIEvents object.
-	MIDIEvents.connect = connect;
-	MIDIEvents.inputs = inputs;
-	MIDIEvents.outputs = outputs;
-	MIDIEvents.listen = listen;
-	MIDIEvents.unlisten = unlisten;
-	
-	// Add PubSub methods.
-	MIDIEvents.on = PubSub.on;
-	MIDIEvents.off = PubSub.off;
+	MIDIEvents = {
+		connect: connect,
+		inputs: inputs,
+		outputs: outputs,
+		listen: listen,
+		unlisten: unlisten,
+		send: send,
+		
+		// Add PubSub methods.
+		on: PubSub.on,
+		off: PubSub.off
+	};
 	
 	// Return object with public methods.
 	return MIDIEvents;
