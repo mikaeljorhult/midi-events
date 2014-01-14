@@ -1,11 +1,10 @@
-define( [], function() {
+define( [ 'PubSub' ], function( PubSub ) {
 	'use strict';
 	
 	// Declare variables.
 	var MIDIEvents = {},
 		requestMIDI = navigator.requestMIDIAccess(),
-		MIDIAccess = null,
-		eventCache = {};
+		MIDIAccess = null;
 	
 	function connect( callback ) {
 		// Request access to MIDI I/O.
@@ -13,7 +12,7 @@ define( [], function() {
 			MIDIAccess = access;
 			
 			// Trigger event.
-			MIDIEvents.trigger( 'connected' );
+			PubSub.trigger( 'connected' );
 			
 			// Trigger callback.
 			if ( typeof callback === 'function' ) { callback(); }
@@ -89,53 +88,16 @@ define( [], function() {
 		console.log( error );
 	}
 	
-	// Include Pub/Sub in object.
-	MIDIEvents = {
-		trigger: function( topic, args, scope ) {
-			if ( eventCache[ topic ] ) {
-				var thisTopic = eventCache[ topic ],
-					i = thisTopic.length - 1;
-				
-				for ( i; i >= 0 ; i -= 1 ) {
-					thisTopic[ i ].apply( scope || this, args || [] );
-				}
-			}
-		},
-		
-		on: function( topic, callback ) {
-			if ( !eventCache[ topic ] ) {
-				eventCache[ topic ] = [];
-			}
-			
-			eventCache[ topic ].push( callback );
-			
-			return [ topic, callback ];
-		},
-		
-		off: function( handle, completly ) {
-			var t = handle[ 0 ],
-				i = eventCache[ t ].length - 1;
-	
-			if ( eventCache[ t ] ) {
-				for ( i ; i >= 0 ; i -= 1 ) {
-					if ( eventCache[ t ][ i ] === handle[ 1 ] ) {
-						eventCache[ t ].splice( eventCache[ t ][ i ], 1 );
-						
-						if ( completly ) {
-							delete eventCache[ t ];
-						}
-					}
-				}
-			}
-		}
-	};
-	
 	// Add methods to MIDIEvents object.
 	MIDIEvents.connect = connect;
 	MIDIEvents.inputs = inputs;
 	MIDIEvents.outputs = outputs;
 	MIDIEvents.listen = listen;
 	MIDIEvents.unlisten = unlisten;
+	
+	// Add PubSub methods.
+	MIDIEvents.on = PubSub.on;
+	MIDIEvents.off = PubSub.off;
 	
 	// Return object with public methods.
 	return MIDIEvents;
