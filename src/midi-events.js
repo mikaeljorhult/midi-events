@@ -83,17 +83,39 @@ define( [ 'PubSub' ], function( PubSub ) {
 	 * @param midiEvent object Event sent from MIDI port.
 	 */
 	function portListener( midiEvent ) {
-		var message = {};
+		var message = {
+				type: 'unsupported',
+				channel: 0
+			};
 		
-		message = {
-			note: midiEvent.data[ 1 ],
-			velocity: midiEvent.data[ 2 ]
-		};
+		// Determine type of message and channel it was sent on.
+		switch ( true ) {
+			// Lower than 128 is not a supported message.
+			case ( midiEvent.data[ 0 ] < 128 ):
+				message.type = 'unsupported';
+				message.channel = 0;
+				break;
+			
+			// 128 - 143 represent note off on each of the 16 channels.
+			case ( midiEvent.data[ 0 ] < 144 ):
+				message.type = 'noteoff';
+				message.channel = midiEvent.data[ 0 ] - 128;
+				break;
+			
+			// 144 - 159 represent note on on each of the 16 channels.
+			case ( midiEvent.data[ 0 ] < 160 ):
+				message.type = 'noteon';
+				message.channel = midiEvent.data[ 0 ] - 144;
+				break;
+		}
 		
-		console.log( midiEvent );
-		console.log( message );
+		// Add note and value.
+		message.note = midiEvent.data[ 1 ];
+		message.value = midiEvent.data[ 2 ];
 		
-		// PubSub.trigger();
+		// Trigger events.
+		PubSub.trigger( message.type, [ message ] );
+		PubSub.trigger( message.type + ':' + message.note, [ message ] );
 	}
 	
 	/**
