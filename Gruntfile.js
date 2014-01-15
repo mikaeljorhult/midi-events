@@ -42,6 +42,7 @@ module.exports = function( grunt ) {
 			all: [
 				'Gruntfile.js',
 				'src/midi-events.js',
+				'src/Device.js',
 				'src/PubSub.js'
 			]
 		}
