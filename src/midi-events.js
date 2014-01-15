@@ -4,7 +4,9 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	// Declare variables.
 	var MIDIEvents = {},
 		requestMIDI = navigator.requestMIDIAccess(),
-		MIDIAccess = null;
+		MIDIAccess = null,
+		inputPorts = [],
+		outputPorts = [];
 	
 	/**
 	 * Get all input ports.
@@ -15,6 +17,8 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 		// Request access to MIDI I/O.
 		requestMIDI.then( function( access ) {
 			MIDIAccess = access;
+			inputPorts = MIDIAccess.inputs();
+			outputPorts = MIDIAccess.outputs();
 			
 			// Trigger event.
 			PubSub.trigger( 'connected' );
@@ -30,7 +34,9 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @return array All available MIDI inputs.
 	 */
 	function inputs() {
-		return MIDIAccess.inputs();
+		inputPorts = MIDIAccess.inputs();
+		
+		return inputPorts;
 	}
 	
 	/**
@@ -39,7 +45,9 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @return array All available MIDI inputs.
 	 */
 	function outputs() {
-		return MIDIAccess.outputs();
+		outputPorts = MIDIAccess.outputs();
+		
+		return outputPorts;
 	}
 	
 	/**
@@ -81,6 +89,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 */
 	function portListener( midiEvent ) {
 		var message = {
+				port: resolveInputPort( midiEvent.target.id ),
 				type: 'unsupported',
 				channel: 0
 			};
@@ -111,8 +120,10 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 		message.value = midiEvent.data[ 2 ];
 		
 		// Trigger events.
+		PubSub.trigger( 'message', [ message ] );
 		PubSub.trigger( message.type, [ message ] );
 		PubSub.trigger( message.type + ':' + message.note, [ message ] );
+		PubSub.trigger( 'port:' + message.port, [ message ] );
 	}
 	
 	/**
@@ -191,6 +202,23 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 		
 		// Return all ports.
 		return ports;
+	}
+	
+	/**
+	 * Resolve port from requested id.
+	 * 
+	 * @param id integer ID of MIDI port to resolve.
+	 * @return integer Resolved port.
+	 */
+	function resolveInputPort( id ) {
+		var i,
+			length = inputPorts.length;
+		
+		for ( i = 0; i < length; i++ ) {
+			if ( inputPorts[ i ].id === id ) {
+				return i;
+			}
+		}
 	}
 	
 	/**
