@@ -1,16 +1,18 @@
 /*!
- * MIDI Events 0.1.2
+ * MIDI Events 0.1.3
  * 
  * @author Mikael Jorhult 
  * @license https://github.com/mikaeljorhult/midi-events MIT
 */
-define( [ 'PubSub' ], function( PubSub ) {
+define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	'use strict';
 	
 	// Declare variables.
 	var MIDIEvents = {},
 		requestMIDI = navigator.requestMIDIAccess(),
-		MIDIAccess = null;
+		MIDIAccess = null,
+		inputPorts = [],
+		outputPorts = [];
 	
 	/**
 	 * Get all input ports.
@@ -21,6 +23,8 @@ define( [ 'PubSub' ], function( PubSub ) {
 		// Request access to MIDI I/O.
 		requestMIDI.then( function( access ) {
 			MIDIAccess = access;
+			inputPorts = MIDIAccess.inputs();
+			outputPorts = MIDIAccess.outputs();
 			
 			// Trigger event.
 			PubSub.trigger( 'connected' );
@@ -36,7 +40,9 @@ define( [ 'PubSub' ], function( PubSub ) {
 	 * @return array All available MIDI inputs.
 	 */
 	function inputs() {
-		return MIDIAccess.inputs();
+		inputPorts = MIDIAccess.inputs();
+		
+		return inputPorts;
 	}
 	
 	/**
@@ -45,7 +51,9 @@ define( [ 'PubSub' ], function( PubSub ) {
 	 * @return array All available MIDI inputs.
 	 */
 	function outputs() {
-		return MIDIAccess.outputs();
+		outputPorts = MIDIAccess.outputs();
+		
+		return outputPorts;
 	}
 	
 	/**
@@ -54,7 +62,14 @@ define( [ 'PubSub' ], function( PubSub ) {
 	 * @param input mixed Input ports to monitor for messages.
 	 */
 	function listen( input ) {
-		assignListener( input, portListener );
+		var ports = getInputPorts( input ),
+			length = ports.length,
+			i;
+		
+		// Attach listener to all requested ports.
+		for ( i = 0; i < length; i++ ) {
+			ports[ i ].addEventListener( 'midimessage', portListener, false );
+		}
 	}
 	
 	/**
@@ -63,23 +78,13 @@ define( [ 'PubSub' ], function( PubSub ) {
 	 * @param input mixed Input ports to stop monitoring for messages.
 	 */
 	function unlisten( input ) {
-		assignListener( input, function(){} );
-	}
-	
-	/**
-	 * Add listeners to specified inputs.
-	 * 
-	 * @param input mixed Input ports to assign listener to.
-	 * @param listener function Callback to run when messages is received.
-	 */
-	function assignListener( input, listener ) {
 		var ports = getInputPorts( input ),
 			length = ports.length,
 			i;
 		
 		// Attach listener to all requested ports.
 		for ( i = 0; i < length; i++ ) {
-			ports[ i ].onmidimessage = listener;
+			ports[ i ].removeEventListener( 'midimessage', portListener, false );
 		}
 	}
 	
@@ -90,6 +95,7 @@ define( [ 'PubSub' ], function( PubSub ) {
 	 */
 	function portListener( midiEvent ) {
 		var message = {
+				port: resolveInputPort( midiEvent.target.id ),
 				type: 'unsupported',
 				channel: 0
 			};
@@ -120,8 +126,10 @@ define( [ 'PubSub' ], function( PubSub ) {
 		message.value = midiEvent.data[ 2 ];
 		
 		// Trigger events.
+		PubSub.trigger( 'message', [ message ] );
 		PubSub.trigger( message.type, [ message ] );
 		PubSub.trigger( message.type + ':' + message.note, [ message ] );
+		PubSub.trigger( 'port:' + message.port, [ message ] );
 	}
 	
 	/**
@@ -143,7 +151,7 @@ define( [ 'PubSub' ], function( PubSub ) {
 		} else if ( Object.prototype.toString.call( input ) === '[object Array]' ) {
 			// An array of indexes is requested. Add all of them.
 			indexes = input;
-		} else if ( typeof input === 'string' && input.toLowerCase() === 'all' ) {
+		} else if ( ( typeof input === 'string' && input.toLowerCase() === 'all' ) || input === undefined ) {
 			// All ports requested. Assign them directly.
 			ports = inputs();
 		}
@@ -203,7 +211,24 @@ define( [ 'PubSub' ], function( PubSub ) {
 	}
 	
 	/**
-	 * Resolve ports from requested output.
+	 * Resolve port from requested id.
+	 * 
+	 * @param id integer ID of MIDI port to resolve.
+	 * @return integer Resolved port.
+	 */
+	function resolveInputPort( id ) {
+		var i,
+			length = inputPorts.length;
+		
+		for ( i = 0; i < length; i++ ) {
+			if ( inputPorts[ i ].id === id ) {
+				return i;
+			}
+		}
+	}
+	
+	/**
+	 * Send MIDI message to requested ports.
 	 * 
 	 * @param output mixed Output ports to send message to.
 	 * @param message object MIDI message to send.
@@ -243,6 +268,10 @@ define( [ 'PubSub' ], function( PubSub ) {
 		console.log( error );
 	}
 	
+	function createDevice( input, output ) {
+		return new Device( input, output );
+	}
+	
 	// Add methods to MIDIEvents object.
 	MIDIEvents = {
 		connect: connect,
@@ -251,6 +280,9 @@ define( [ 'PubSub' ], function( PubSub ) {
 		listen: listen,
 		unlisten: unlisten,
 		send: send,
+		
+		// Handling devices.
+		createDevice: createDevice,
 		
 		// Add PubSub methods.
 		on: PubSub.on,
