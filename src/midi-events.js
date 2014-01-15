@@ -197,7 +197,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	}
 	
 	/**
-	 * Resolve ports from requested output.
+	 * Send MIDI message to requested ports.
 	 * 
 	 * @param output mixed Output ports to send message to.
 	 * @param message object MIDI message to send.
