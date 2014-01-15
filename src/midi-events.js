@@ -1,4 +1,4 @@
-define( [ 'PubSub' ], function( PubSub ) {
+define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	'use strict';
 	
 	// Declare variables.
@@ -237,6 +237,10 @@ define( [ 'PubSub' ], function( PubSub ) {
 		console.log( error );
 	}
 	
+	function createDevice( input, output ) {
+		return new Device( input, output );
+	}
+	
 	// Add methods to MIDIEvents object.
 	MIDIEvents = {
 		connect: connect,
@@ -245,6 +249,9 @@ define( [ 'PubSub' ], function( PubSub ) {
 		listen: listen,
 		unlisten: unlisten,
 		send: send,
+		
+		// Handling devices.
+		createDevice: createDevice,
 		
 		// Add PubSub methods.
 		on: PubSub.on,
