@@ -48,7 +48,14 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @param input mixed Input ports to monitor for messages.
 	 */
 	function listen( input ) {
-		assignListener( input, portListener );
+		var ports = getInputPorts( input ),
+			length = ports.length,
+			i;
+		
+		// Attach listener to all requested ports.
+		for ( i = 0; i < length; i++ ) {
+			ports[ i ].addEventListener( 'midimessage', portListener, false );
+		}
 	}
 	
 	/**
@@ -57,23 +64,13 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @param input mixed Input ports to stop monitoring for messages.
 	 */
 	function unlisten( input ) {
-		assignListener( input, function(){} );
-	}
-	
-	/**
-	 * Add listeners to specified inputs.
-	 * 
-	 * @param input mixed Input ports to assign listener to.
-	 * @param listener function Callback to run when messages is received.
-	 */
-	function assignListener( input, listener ) {
 		var ports = getInputPorts( input ),
 			length = ports.length,
 			i;
 		
 		// Attach listener to all requested ports.
 		for ( i = 0; i < length; i++ ) {
-			ports[ i ].onmidimessage = listener;
+			ports[ i ].removeEventListener( 'midimessage', portListener, false );
 		}
 	}
 	
