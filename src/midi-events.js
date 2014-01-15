@@ -48,7 +48,9 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @param input mixed Input ports to monitor for messages.
 	 */
 	function listen( input ) {
-		assignListener( input, portListener );
+		var inputs = input !== undefined ? input : 'all';
+		
+		assignListener( inputs, portListener );
 	}
 	
 	/**
@@ -57,7 +59,9 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @param input mixed Input ports to stop monitoring for messages.
 	 */
 	function unlisten( input ) {
-		assignListener( input, function(){} );
+		var inputs = input !== undefined ? input : 'all';
+		
+		assignListener( inputs, function(){} );
 	}
 	
 	/**
