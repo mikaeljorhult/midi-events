@@ -48,9 +48,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @param input mixed Input ports to monitor for messages.
 	 */
 	function listen( input ) {
-		var inputs = input !== undefined ? input : 'all';
-		
-		assignListener( inputs, portListener );
+		assignListener( input, portListener );
 	}
 	
 	/**
@@ -59,9 +57,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @param input mixed Input ports to stop monitoring for messages.
 	 */
 	function unlisten( input ) {
-		var inputs = input !== undefined ? input : 'all';
-		
-		assignListener( inputs, function(){} );
+		assignListener( input, function(){} );
 	}
 	
 	/**
@@ -141,7 +137,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 		} else if ( Object.prototype.toString.call( input ) === '[object Array]' ) {
 			// An array of indexes is requested. Add all of them.
 			indexes = input;
-		} else if ( typeof input === 'string' && input.toLowerCase() === 'all' ) {
+		} else if ( ( typeof input === 'string' && input.toLowerCase() === 'all' ) || input === undefined ) {
 			// All ports requested. Assign them directly.
 			ports = inputs();
 		}
