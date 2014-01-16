@@ -98,12 +98,10 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 		switch ( true ) {
 			// Lower than 128 is not a supported message.
 			case ( midiEvent.data[ 0 ] < 128 ):
-				message.type = 'unsupported';
-				message.channel = 0;
 				break;
 			
 			// 128 - 143 represent note off on each of the 16 channels.
-			case ( midiEvent.data[ 0 ] < 144 || midiEvent.data[ 2 ] === 0 ):
+			case ( midiEvent.data[ 0 ] < 144 || ( midiEvent.data[ 0 ] < 160 && midiEvent.data[ 2 ] === 0 ) ):
 				message.type = 'noteoff';
 				message.channel = midiEvent.data[ 0 ] - ( midiEvent.data[ 0 ] > 143 ? 144 : 128 );
 				break;
@@ -112,6 +110,17 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 			case ( midiEvent.data[ 0 ] < 160 ):
 				message.type = 'noteon';
 				message.channel = midiEvent.data[ 0 ] - 144;
+				break;
+			
+			// 160 - 176 is not a supported message.
+			case ( midiEvent.data[ 0 ] < 176 ):
+				break;
+			
+			
+			// 176 - 191 represent controller messages on each of the 16 channels.
+			case ( midiEvent.data[ 0 ] < 192 ):
+				message.type = 'controller';
+				message.channel = midiEvent.data[ 0 ] - 176;
 				break;
 		}
 		
