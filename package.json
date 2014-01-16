@@ -1,7 +1,7 @@
 {
 	"name": "midi-events",
 	"title": "MIDI Events",
-	"version": "0.1.4",
+	"version": "0.1.5",
 	"description": "Wrapper module to simplify working with Web MIDI API.",
 	"author": {
 		"name": "Mikael Jorhult",

@@ -1,5 +1,5 @@
 /*!
- * MIDI Events 0.1.4
+ * MIDI Events 0.1.5
  * 
  * @author Mikael Jorhult 
  * @license https://github.com/mikaeljorhult/midi-events MIT
@@ -100,16 +100,18 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 				channel: 0
 			};
 		
+		// Add note and value.
+		message.note = midiEvent.data[ 1 ];
+		message.value = midiEvent.data[ 2 ];
+		
 		// Determine type of message and channel it was sent on.
 		switch ( true ) {
 			// Lower than 128 is not a supported message.
 			case ( midiEvent.data[ 0 ] < 128 ):
-				message.type = 'unsupported';
-				message.channel = 0;
 				break;
 			
 			// 128 - 143 represent note off on each of the 16 channels.
-			case ( midiEvent.data[ 0 ] < 144 || midiEvent.data[ 2 ] === 0 ):
+			case ( midiEvent.data[ 0 ] < 144 || ( midiEvent.data[ 0 ] < 160 && midiEvent.data[ 2 ] === 0 ) ):
 				message.type = 'noteoff';
 				message.channel = midiEvent.data[ 0 ] - ( midiEvent.data[ 0 ] > 143 ? 144 : 128 );
 				break;
@@ -119,11 +121,35 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 				message.type = 'noteon';
 				message.channel = midiEvent.data[ 0 ] - 144;
 				break;
+			
+			// 160 - 176 represent aftertouch on each of the 16 channels.
+			case ( midiEvent.data[ 0 ] < 176 ):
+				message.type = 'polyphonic-aftertouch';
+				message.channel = midiEvent.data[ 0 ] - 160;
+				break;
+			
+			// 176 - 191 represent controller messages on each of the 16 channels.
+			case ( midiEvent.data[ 0 ] < 192 ):
+				message.type = 'controller';
+				message.channel = midiEvent.data[ 0 ] - 176;
+				break;
+			
+			// 192 - 207 represent control change messages on each of the 16 channels.
+			case ( midiEvent.data[ 0 ] < 208 ):
+				message.type = 'controlchange';
+				message.channel = midiEvent.data[ 0 ] - 192;
+				message.note = 0;
+				message.value = midiEvent.data[ 1 ];
+				break;
+			
+			// 208 - 223 represent channel aftertouch on each of the 16 channels.
+			case ( midiEvent.data[ 0 ] < 224 ):
+				message.type = 'aftertouch';
+				message.channel = midiEvent.data[ 0 ] - 208;
+				message.note = 0;
+				message.value = midiEvent.data[ 1 ];
+				break;
 		}
-		
-		// Add note and value.
-		message.note = midiEvent.data[ 1 ];
-		message.value = midiEvent.data[ 2 ];
 		
 		// Trigger events.
 		PubSub.trigger( 'message', [ message ] );
@@ -233,29 +259,40 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @param output mixed Output ports to send message to.
 	 * @param message object MIDI message to send.
 	 */
-	function send( output, message ) {
+	function send( output, messages ) {
 		var ports = getOutputPorts( output ),
-			length = ports.length,
-			i;
+			i,
+			j;
 		
-		// Convert string values to numeric.
-		switch ( message.type ) {
-			case 'noteon':
-				message.type = 144;
-				break;
-			
-			case 'noteoff':
-				message.type = 128;
-				break;
+		// Convert message to array if needed.
+		if ( Object.prototype.toString.call( messages ) !== '[object Array]' ) {
+			messages = [ messages ];
 		}
 		
-		// Send message to requested ports.
-		for ( i = 0; i < length; i++ ) {
-			ports[ i ].send( [
-				message.type,
-				message.note,
-				message.value
-			] );
+		// Go through and check each message type.
+		for ( i = 0; i < messages.length; i++ ) {
+			// Convert string values to numeric.
+			switch ( messages[ i ].type ) {
+				case 'noteon':
+					messages[ i ].type = 144;
+					break;
+				
+				case 'noteoff':
+					messages[ i ].type = 128;
+					break;
+			}
+		}
+		
+		// Send all messages to each requested ports.
+		for ( i = 0; i < ports.length; i++ ) {
+			for ( j = 0; j < messages.length; j++ ) {
+				// Do the actual sending.
+				ports[ i ].send( [
+					messages[ j ].type,
+					messages[ j ].note,
+					messages[ j ].value
+				] );
+			}
 		}
 	}
 	
