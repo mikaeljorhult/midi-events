@@ -227,29 +227,40 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @param output mixed Output ports to send message to.
 	 * @param message object MIDI message to send.
 	 */
-	function send( output, message ) {
+	function send( output, messages ) {
 		var ports = getOutputPorts( output ),
-			length = ports.length,
-			i;
+			i,
+			j;
 		
-		// Convert string values to numeric.
-		switch ( message.type ) {
-			case 'noteon':
-				message.type = 144;
-				break;
-			
-			case 'noteoff':
-				message.type = 128;
-				break;
+		// Convert message to array if needed.
+		if ( Object.prototype.toString.call( messages ) !== '[object Array]' ) {
+			messages = [ messages ];
 		}
 		
-		// Send message to requested ports.
-		for ( i = 0; i < length; i++ ) {
-			ports[ i ].send( [
-				message.type,
-				message.note,
-				message.value
-			] );
+		// Go through and check each message type.
+		for ( i = 0; i < messages.length; i++ ) {
+			// Convert string values to numeric.
+			switch ( messages[ i ].type ) {
+				case 'noteon':
+					messages[ i ].type = 144;
+					break;
+				
+				case 'noteoff':
+					messages[ i ].type = 128;
+					break;
+			}
+		}
+		
+		// Send all messages to each requested ports.
+		for ( i = 0; i < ports.length; i++ ) {
+			for ( j = 0; j < messages.length; j++ ) {
+				// Do the actual sending.
+				ports[ i ].send( [
+					messages[ j ].type,
+					messages[ j ].note,
+					messages[ j ].value
+				] );
+			}
 		}
 	}
 	
