@@ -105,7 +105,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 			// 128 - 143 represent note off on each of the 16 channels.
 			case ( midiEvent.data[ 0 ] < 144 || midiEvent.data[ 2 ] === 0 ):
 				message.type = 'noteoff';
-				message.channel = midiEvent.data[ 0 ] - 128;
+				message.channel = midiEvent.data[ 0 ] - ( midiEvent.data[ 0 ] > 143 ? 144 : 128 );
 				break;
 			
 			// 144 - 159 represent note on on each of the 16 channels.
