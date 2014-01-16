@@ -94,6 +94,10 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 				channel: 0
 			};
 		
+		// Add note and value.
+		message.note = midiEvent.data[ 1 ];
+		message.value = midiEvent.data[ 2 ];
+		
 		// Determine type of message and channel it was sent on.
 		switch ( true ) {
 			// Lower than 128 is not a supported message.
@@ -112,21 +116,30 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 				message.channel = midiEvent.data[ 0 ] - 144;
 				break;
 			
-			// 160 - 176 is not a supported message.
+			// 160 - 176 represent aftertouch on each of the 16 channels.
 			case ( midiEvent.data[ 0 ] < 176 ):
+				message.type = 'polyphonic-aftertouch';
+				message.channel = midiEvent.data[ 0 ] - 160;
 				break;
-			
 			
 			// 176 - 191 represent controller messages on each of the 16 channels.
 			case ( midiEvent.data[ 0 ] < 192 ):
 				message.type = 'controller';
 				message.channel = midiEvent.data[ 0 ] - 176;
 				break;
+			
+			// 192 - 207 is not a supported message.
+			case ( midiEvent.data[ 0 ] < 208 ):
+				break;
+			
+			// 208 - 223 represent channel aftertouch on each of the 16 channels.
+			case ( midiEvent.data[ 0 ] < 224 ):
+				message.type = 'aftertouch';
+				message.channel = midiEvent.data[ 0 ] - 208;
+				message.note = 0;
+				message.value = midiEvent.data[ 1 ];
+				break;
 		}
-		
-		// Add note and value.
-		message.note = midiEvent.data[ 1 ];
-		message.value = midiEvent.data[ 2 ];
 		
 		// Trigger events.
 		PubSub.trigger( 'message', [ message ] );
