@@ -1,4 +1,4 @@
-define( [ 'require' ], function( require ) {
+define( [ 'require', 'PubSub' ], function( require, PubSub ) {
 	'use strict';
 	
 	/**
@@ -27,5 +27,42 @@ define( [ 'require' ], function( require ) {
 		return this;
 	};
 	
+	/**
+	 * Subscribe to MIDI messages from device ports.
+	 * 
+	 * @param callback function Function to run when a message is received.
+	 */
+	Device.prototype.listen = function( callback ) {
+		var i,
+			length = this.inputs.length;
+		
+		// Subscribe to events on each device port.
+		for ( i = 0; i < length; i++ ) {
+			PubSub.on( 'port:' + this.inputs[ i ], callback );
+		}
+		
+		// Return this to make methods chainable.
+		return this;
+	};
+	
+	/**
+	 * Unsubscribe function from device messages.
+	 * 
+	 * @param callback function Function to unsubscribe.
+	 */
+	Device.prototype.unlisten = function( callback ) {
+		var i,
+			length = this.inputs.length;
+		
+		// Unsubscribe to events on each device port.
+		for ( i = 0; i < length; i++ ) {
+			PubSub.off( PubSub.on( 'port:' + this.inputs[ i ], callback ) );
+		}
+		
+		// Return this to make methods chainable.
+		return this;
+	};
+	
+	// Return function.
 	return Device;
 } );
