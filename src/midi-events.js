@@ -128,8 +128,12 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 				message.channel = midiEvent.data[ 0 ] - 176;
 				break;
 			
-			// 192 - 207 is not a supported message.
+			// 192 - 207 represent control change messages on each of the 16 channels.
 			case ( midiEvent.data[ 0 ] < 208 ):
+				message.type = 'controlchange';
+				message.channel = midiEvent.data[ 0 ] - 192;
+				message.note = 0;
+				message.value = midiEvent.data[ 1 ];
 				break;
 			
 			// 208 - 223 represent channel aftertouch on each of the 16 channels.
