@@ -25,7 +25,7 @@ require( [ 'midi-events' ], function( midi ) {
 	
 	function whenConnected() {
 		// Listen to all available MIDI inputs.
-		midi.listen( 'all' );
+		midi.listen();
 		
 		// Runs when a note on message is received.
 		midi.on( 'noteon', function( message ) {
