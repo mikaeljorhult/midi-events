@@ -252,8 +252,9 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * 
 	 * @param output mixed Output ports to send message to.
 	 * @param message object MIDI message to send.
+	 * @param timestamp integer Timestamp when message should be sent.
 	 */
-	function send( output, messages ) {
+	function send( output, messages, timestamp ) {
 		var ports = getOutputPorts( output ),
 			i,
 			j;
@@ -285,7 +286,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 					messages[ j ].type,
 					messages[ j ].note,
 					messages[ j ].value
-				] );
+				], timestamp === undefined ? window.performance.now() : timestamp );
 			}
 		}
 	}

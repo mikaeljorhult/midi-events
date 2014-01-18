@@ -17,6 +17,7 @@ callback function. All callbacks attached to a topic will be triggered when the 
 message is received.
 
 ### Example
+
 ```javascript
 require( [ 'midi-events' ], function( midi ) {
 	midi.connect();
