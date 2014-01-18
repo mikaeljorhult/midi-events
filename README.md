@@ -36,6 +36,20 @@ require( [ 'midi-events' ], function( midi ) {
 } );
 ```
 
+### Events
+
+Events are triggered when a MIDI message is received from one the ports that the module are listening to.
+
+* `message`: Triggered on any type of message.
+* `noteon`: When a note is pressed.
+* `noteoff`: When a note is released.
+* `controller`: A controller is changed.
+* `controlchange`: A controller is changed.
+* `aftertouch`: Aftertouch on a channel.
+* `polyphonic-aftertouch`: Aftertouch on a note.
+* `unsupported`: All messages that are not (yet?) supported by the module will be returned as
+"unsupported" message type.
+
 
 ## Support
 
