@@ -39,8 +39,17 @@ require( [ 'midi-events' ], function( midi ) {
 
 ### Events
 
-Events are triggered when a MIDI message is received from one the ports that the module are
+Events are triggered when a MIDI message is received from one the ports that the module is
 listening to.
+
+For every received message four events are triggered: `message`, `message.type`, `message.type:XX`
+and `port:XX`where XX is substituted with the note or port of the message.
+
+This means that when C1 (MIDI note 12) is pressed on a keyboard connected to the first MIDI port
+it will trigger events `message`, `noteon`, `noteon:12` and `port:0`. When key is released
+events `message`, `noteoff`, `noteoff:12` and `port:0` are triggered.
+
+#### Message Types
 
 * `message`: Triggered on any type of message.
 * `noteon`: When a note is pressed.
