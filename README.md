@@ -37,6 +37,18 @@ require( [ 'midi-events' ], function( midi ) {
 } );
 ```
 
+### Properties and Methods
+
+* `supported`: Boolean if Web MIDI API is supported in current browser.
+* `connect()`: Request access to MIDI ports.
+* `inputs()`: Return array of all available input ports.
+* `outputs()`: Return array of all available output ports.
+* `listen( ports )`: Listen for messages on one or more ports.
+* `unlisten( ports )`: Stop listening on one or more ports.
+* `send( ports, messages, timestamp )`: Send one or more messages to one or multiple ports. Optionally at a specific time.
+* `on( message, callback )`: Register a callback for when a type of MIDID message is received.
+* `off( handle )`: Remove previously registered callback.
+
 ### Events
 
 Events are triggered when a MIDI message is received from one the ports that the module is
@@ -51,6 +63,7 @@ events `message`, `noteoff`, `noteoff:12` and `port:0` are triggered.
 
 #### Message Types
 
+* `connected`: Access to MIDI was granted.
 * `message`: Triggered on any type of message.
 * `noteon`: When a note is pressed.
 * `noteoff`: When a note is released.
