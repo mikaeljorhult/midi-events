@@ -3,7 +3,8 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	
 	// Declare variables.
 	var MIDIEvents = {},
-		requestMIDI = navigator.requestMIDIAccess(),
+		supported = ( !!window.navigator.requestMIDIAccess ),
+		requestMIDI = ( supported ? navigator.requestMIDIAccess() : null ),
 		MIDIAccess = null,
 		inputPorts = [],
 		outputPorts = [];
@@ -306,6 +307,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	
 	// Add methods to MIDIEvents object.
 	MIDIEvents = {
+		supported: supported,
 		connect: connect,
 		inputs: inputs,
 		outputs: outputs,
