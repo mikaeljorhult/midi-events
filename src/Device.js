@@ -16,12 +16,13 @@ define( [ 'require', 'PubSub' ], function( require, PubSub ) {
 	 * Send MIDI message to device.
 	 * 
 	 * @param message object MIDI message to send.
+	 * @param timestamp integer Timestamp when message should be sent.
 	 */
-	Device.prototype.send = function( message ) {
+	Device.prototype.send = function( message, timestamp ) {
 		var midi = require( 'midi-events' );
 		
 		// Forward message to correct port.
-		midi.send( this.outputs, message );
+		midi.send( this.outputs, message, timestamp );
 		
 		// Return this to make methods chainable.
 		return this;
