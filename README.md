@@ -84,6 +84,7 @@ of properties.
 * `channel`: Channel the message was sent to.
 * `note`: Number of note/controller that was received.
 * `value`: Value that was sent (velocity, level etc.).
+* `originalEvent`: The original event was received.
 
 
 ## Support

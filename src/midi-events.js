@@ -99,6 +99,9 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 		message.note = midiEvent.data[ 1 ];
 		message.value = midiEvent.data[ 2 ];
 		
+		// Include original event.
+		message.originalEvent = midiEvent;
+		
 		// Determine type of message and channel it was sent on.
 		switch ( true ) {
 			// Lower than 128 is not a supported message.
