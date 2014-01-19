@@ -1,5 +1,5 @@
 /*!
- * MIDI Events 0.1.6
+ * MIDI Events 0.1.7
  * 
  * @author Mikael Jorhult 
  * @license https://github.com/mikaeljorhult/midi-events MIT
@@ -9,7 +9,8 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	
 	// Declare variables.
 	var MIDIEvents = {},
-		requestMIDI = navigator.requestMIDIAccess(),
+		supported = ( !!window.navigator.requestMIDIAccess ),
+		requestMIDI = ( supported ? navigator.requestMIDIAccess() : null ),
 		MIDIAccess = null,
 		inputPorts = [],
 		outputPorts = [];
@@ -103,6 +104,9 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 		// Add note and value.
 		message.note = midiEvent.data[ 1 ];
 		message.value = midiEvent.data[ 2 ];
+		
+		// Include original event.
+		message.originalEvent = midiEvent;
 		
 		// Determine type of message and channel it was sent on.
 		switch ( true ) {
@@ -312,6 +316,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	
 	// Add methods to MIDIEvents object.
 	MIDIEvents = {
+		supported: supported,
 		connect: connect,
 		inputs: inputs,
 		outputs: outputs,
