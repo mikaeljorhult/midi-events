@@ -163,21 +163,28 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @return array Resolved ports, or empty array.
 	 */
 	function getInputPorts( input ) {
-		// Return all ports.
+		// Return resolved ports.
 		return getPorts( 'input', input );
 	}
 	
 	/**
 	 * Resolve ports from requested output.
 	 * 
-	 * @param input mixed Output ports to resolve.
+	 * @param output mixed Output ports to resolve.
 	 * @return array Resolved ports, or empty array.
 	 */
 	function getOutputPorts( output ) {
-		// Return all ports.
+		// Return resolved ports.
 		return getPorts( 'output', output );
 	}
 	
+	/**
+	 * Resolve requested ports.
+	 * 
+	 * @param type string Type of ports to resolve.
+	 * @param value mixed Ports to resolve.
+	 * @return array Resolved ports, or empty array.
+	 */
 	function getPorts( type, value ) {
 		var availablePorts = ( type === 'output' ? outputs() : inputs() ),
 			arrayToResolve = [],
