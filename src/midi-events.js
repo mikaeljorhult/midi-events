@@ -311,6 +311,10 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 		unlisten: unlisten,
 		send: send,
 		
+		// Private functions.
+		getInputPorts: getInputPorts,
+		getOutputPorts: getOutputPorts,
+		
 		// Handling devices.
 		createDevice: createDevice,
 		

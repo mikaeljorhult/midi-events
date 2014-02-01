@@ -8,8 +8,11 @@ define( [ 'require', 'PubSub' ], function( require, PubSub ) {
 	 * @param mixed output Port to be attached as output for the device.
 	 */
 	function Device( input, output ) {
-		this.inputs = ( input !== undefined ? input : [] );
-		this.outputs = ( output !== undefined ? output : [] );
+		var midi = require( 'midi-events' );
+		
+		// Resolve ports.
+		this.inputs = midi.getInputPorts( input );
+		this.outputs = midi.getOutputPorts( output );
 	}
 	
 	/**
