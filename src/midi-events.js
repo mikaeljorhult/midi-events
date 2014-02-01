@@ -156,6 +156,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 		PubSub.trigger( message.type, [ message ] );
 		PubSub.trigger( message.type + ':' + message.note, [ message ] );
 		PubSub.trigger( 'port:' + message.port, [ message ] );
+		PubSub.trigger( 'id:' + midiEvent.target.id, [ message ] );
 	}
 	
 	/**

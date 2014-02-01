@@ -32,7 +32,7 @@ define( [ 'require', 'PubSub' ], function( require, PubSub ) {
 	};
 	
 	/**
-	 * Subscribe to MIDI messages from device ports.
+	 * Subscribe to MIDI messages from device inputs.
 	 * 
 	 * @param callback function Function to run when a message is received.
 	 */
@@ -40,9 +40,9 @@ define( [ 'require', 'PubSub' ], function( require, PubSub ) {
 		var i,
 			length = this.inputs.length;
 		
-		// Subscribe to events on each device port.
+		// Subscribe to events on each device id.
 		for ( i = 0; i < length; i++ ) {
-			PubSub.on( 'port:' + this.inputs[ i ], callback );
+			PubSub.on( 'id:' + this.inputs[ i ].id, callback );
 		}
 		
 		// Return this to make methods chainable.
