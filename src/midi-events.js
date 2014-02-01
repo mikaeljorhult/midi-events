@@ -163,36 +163,8 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @return array Resolved ports, or empty array.
 	 */
 	function getInputPorts( input ) {
-		var indexes = [],
-			ports = [],
-			MIDIInputs = inputs(),
-			length = MIDIInputs.length,
-			i;
-		
-		if ( typeof input === 'number' ) {
-			// A single index is requested. Make Array from it.
-			indexes = [ input ];
-		} else if ( Object.prototype.toString.call( input ) === '[object Array]' ) {
-			// An array of indexes is requested. Add all of them.
-			indexes = input;
-		} else if ( ( typeof input === 'string' && input.toLowerCase() === 'all' ) || input === undefined ) {
-			// All ports requested. Assign them directly.
-			ports = inputs();
-		}
-		
-		// If there are indexes not saved in ports variable.
-		if ( indexes.length > 0 ) {
-			// Go through each index and add corresponding input to array.
-			for ( i = 0; i < length; i++ ) {
-				// Make sure that input exists.
-				if ( typeof indexes[ i ] === 'number' && indexes[ i ] < length ) {
-					ports.push( MIDIInputs[ indexes[ i ] ] );
-				}
-			}
-		}
-		
 		// Return all ports.
-		return ports;
+		return getPorts( 'input', input );
 	}
 	
 	/**
@@ -202,21 +174,26 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @return array Resolved ports, or empty array.
 	 */
 	function getOutputPorts( output ) {
-		var indexes = [],
+		// Return all ports.
+		return getPorts( 'output', output );
+	}
+	
+	function getPorts( type, value ) {
+		var availablePorts = ( type === 'output' ? outputs() : inputs() ),
+			indexes = [],
 			ports = [],
-			MIDIOutputs = outputs(),
-			length = MIDIOutputs.length,
+			length = availablePorts.length,
 			i;
 		
-		if ( typeof output === 'number' ) {
+		if ( typeof value === 'number' ) {
 			// A single index is requested. Make Array from it.
-			indexes = [ output ];
-		} else if ( Object.prototype.toString.call( output ) === '[object Array]' ) {
+			indexes = [ value ];
+		} else if ( Object.prototype.toString.call( value ) === '[object Array]' ) {
 			// An array of indexes is requested. Add all of them.
-			indexes = output;
-		} else if ( typeof output === 'string' && output.toLowerCase() === 'all' ) {
+			indexes = value;
+		} else if ( ( typeof value === 'string' && value.toLowerCase() === 'all' ) || value === undefined ) {
 			// All ports requested. Assign them directly.
-			ports = outputs();
+			ports = availablePorts;
 		}
 		
 		// If there are indexes not saved in ports variable.
@@ -225,12 +202,12 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 			for ( i = 0; i < length; i++ ) {
 				// Make sure that input exists.
 				if ( typeof indexes[ i ] === 'number' && indexes[ i ] < length ) {
-					ports.push( MIDIOutputs[ indexes[ i ] ] );
+					ports.push( availablePorts[ indexes[ i ] ] );
 				}
 			}
 		}
 		
-		// Return all ports.
+		// Return resolved ports.
 		return ports;
 	}
 	
