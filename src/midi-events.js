@@ -180,29 +180,38 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	
 	function getPorts( type, value ) {
 		var availablePorts = ( type === 'output' ? outputs() : inputs() ),
-			indexes = [],
+			arrayToResolve = [],
 			ports = [],
-			length = availablePorts.length,
 			i;
 		
 		if ( typeof value === 'number' ) {
-			// A single index is requested. Make Array from it.
-			indexes = [ value ];
+			// A single index is requested. Create an array from it.
+			if ( value < availablePorts.length ) {
+				ports.push( availablePorts[ value ] );
+			}
+		} else if ( Object.prototype.toString.call( value ).match( /^\[object MIDI(Input|Output)]$/ ) ) {
+			// A single MIDI port object was provided. Use it.
+			ports.push( value );
 		} else if ( Object.prototype.toString.call( value ) === '[object Array]' ) {
 			// An array of indexes is requested. Add all of them.
-			indexes = value;
+			arrayToResolve = value;
 		} else if ( ( typeof value === 'string' && value.toLowerCase() === 'all' ) || value === undefined ) {
 			// All ports requested. Assign them directly.
 			ports = availablePorts;
 		}
 		
 		// If there are indexes not saved in ports variable.
-		if ( indexes.length > 0 ) {
-			// Go through each index and add corresponding input to array.
-			for ( i = 0; i < length; i++ ) {
-				// Make sure that input exists.
-				if ( typeof indexes[ i ] === 'number' && indexes[ i ] < length ) {
-					ports.push( availablePorts[ indexes[ i ] ] );
+		if ( arrayToResolve.length > 0 ) {
+			// Go through each index and add corresponding port to array.
+			for ( i = 0; i < arrayToResolve.length; i++ ) {
+				if ( typeof arrayToResolve[ i ] === 'number' ) {
+					// Array index. Make sure that the port exists.
+					if ( arrayToResolve[ i ] < availablePorts.length ) {
+						ports.push( availablePorts[ value ] );
+					}
+				} else if ( Object.prototype.toString.call( arrayToResolve[ i ] ).match( /^\[object MIDI(Input|Output)]$/ ) ) {
+					// A MIDI port object.
+					ports.push( value );
 				}
 			}
 		}
