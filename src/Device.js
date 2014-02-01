@@ -11,8 +11,8 @@ define( [ 'require', 'PubSub' ], function( require, PubSub ) {
 		var midi = require( 'midi-events' );
 		
 		// Resolve ports.
-		this.inputs = midi.getInputPorts( input );
-		this.outputs = midi.getOutputPorts( output );
+		this.inputs = midi.inputs( input );
+		this.outputs = midi.outputs( output );
 	}
 	
 	/**

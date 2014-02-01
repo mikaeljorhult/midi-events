@@ -30,23 +30,25 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	}
 	
 	/**
-	 * Get all input ports.
+	 * Get input ports.
 	 * 
+	 * @param output mixed Requested inputs.
 	 * @return array All available MIDI inputs.
 	 */
-	function inputs() {
-		inputPorts = MIDIAccess.inputs();
+	function inputs( input ) {
+		inputPorts = getPorts( 'input', input );
 		
 		return inputPorts;
 	}
 	
 	/**
-	 * Get all output ports.
+	 * Get output ports.
 	 * 
+	 * @param output mixed Requested outputs.
 	 * @return array All available MIDI inputs.
 	 */
-	function outputs() {
-		outputPorts = MIDIAccess.outputs();
+	function outputs( output ) {
+		outputPorts = getPorts( 'output', output );
 		
 		return outputPorts;
 	}
@@ -57,7 +59,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @param input mixed Input ports to monitor for messages.
 	 */
 	function listen( input ) {
-		var ports = getInputPorts( input ),
+		var ports = inputs( input ),
 			length = ports.length,
 			i;
 		
@@ -73,7 +75,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @param input mixed Input ports to stop monitoring for messages.
 	 */
 	function unlisten( input ) {
-		var ports = getInputPorts( input ),
+		var ports = inputs( input ),
 			length = ports.length,
 			i;
 		
@@ -157,28 +159,6 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	}
 	
 	/**
-	 * Resolve ports from requested input.
-	 * 
-	 * @param input mixed Input ports to resolve.
-	 * @return array Resolved ports, or empty array.
-	 */
-	function getInputPorts( input ) {
-		// Return resolved ports.
-		return getPorts( 'input', input );
-	}
-	
-	/**
-	 * Resolve ports from requested output.
-	 * 
-	 * @param output mixed Output ports to resolve.
-	 * @return array Resolved ports, or empty array.
-	 */
-	function getOutputPorts( output ) {
-		// Return resolved ports.
-		return getPorts( 'output', output );
-	}
-	
-	/**
 	 * Resolve requested ports.
 	 * 
 	 * @param type string Type of ports to resolve.
@@ -186,7 +166,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @return array Resolved ports, or empty array.
 	 */
 	function getPorts( type, value ) {
-		var availablePorts = ( type === 'output' ? outputs() : inputs() ),
+		var availablePorts = ( type === 'output' ? MIDIAccess.outputs() : MIDIAccess.inputs() ),
 			arrayToResolve = [],
 			ports = [],
 			i;
@@ -252,7 +232,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @param timestamp integer Timestamp when message should be sent.
 	 */
 	function send( output, messages, timestamp ) {
-		var ports = getOutputPorts( output ),
+		var ports = outputs( output ),
 			i,
 			j;
 		
@@ -310,10 +290,6 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 		listen: listen,
 		unlisten: unlisten,
 		send: send,
-		
-		// Private functions.
-		getInputPorts: getInputPorts,
-		getOutputPorts: getOutputPorts,
 		
 		// Handling devices.
 		createDevice: createDevice,
