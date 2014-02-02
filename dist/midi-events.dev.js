@@ -1,5 +1,5 @@
 /*!
- * MIDI Events 0.1.7
+ * MIDI Events 0.1.8
  * 
  * @author Mikael Jorhult 
  * @license https://github.com/mikaeljorhult/midi-events MIT
@@ -36,25 +36,23 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	}
 	
 	/**
-	 * Get all input ports.
+	 * Get input ports.
 	 * 
+	 * @param output mixed Requested inputs.
 	 * @return array All available MIDI inputs.
 	 */
-	function inputs() {
-		inputPorts = MIDIAccess.inputs();
-		
-		return inputPorts;
+	function inputs( input ) {
+		return getPorts( 'input', input );
 	}
 	
 	/**
-	 * Get all output ports.
+	 * Get output ports.
 	 * 
+	 * @param output mixed Requested outputs.
 	 * @return array All available MIDI inputs.
 	 */
-	function outputs() {
-		outputPorts = MIDIAccess.outputs();
-		
-		return outputPorts;
+	function outputs( output ) {
+		return getPorts( 'output', output );
 	}
 	
 	/**
@@ -63,7 +61,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @param input mixed Input ports to monitor for messages.
 	 */
 	function listen( input ) {
-		var ports = getInputPorts( input ),
+		var ports = inputs( input ),
 			length = ports.length,
 			i;
 		
@@ -79,7 +77,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @param input mixed Input ports to stop monitoring for messages.
 	 */
 	function unlisten( input ) {
-		var ports = getInputPorts( input ),
+		var ports = inputs( input ),
 			length = ports.length,
 			i;
 		
@@ -160,83 +158,55 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 		PubSub.trigger( message.type, [ message ] );
 		PubSub.trigger( message.type + ':' + message.note, [ message ] );
 		PubSub.trigger( 'port:' + message.port, [ message ] );
+		PubSub.trigger( 'id:' + midiEvent.target.id, [ message ] );
 	}
 	
 	/**
-	 * Resolve ports from requested input.
+	 * Resolve requested ports.
 	 * 
-	 * @param input mixed Input ports to resolve.
+	 * @param type string Type of ports to resolve.
+	 * @param value mixed Ports to resolve.
 	 * @return array Resolved ports, or empty array.
 	 */
-	function getInputPorts( input ) {
-		var indexes = [],
+	function getPorts( type, value ) {
+		var availablePorts = ( type === 'output' ? outputPorts : inputPorts ),
+			arrayToResolve = [],
 			ports = [],
-			MIDIInputs = inputs(),
-			length = MIDIInputs.length,
 			i;
 		
-		if ( typeof input === 'number' ) {
-			// A single index is requested. Make Array from it.
-			indexes = [ input ];
-		} else if ( Object.prototype.toString.call( input ) === '[object Array]' ) {
+		if ( typeof value === 'number' ) {
+			// A single index is requested. Create an array from it.
+			if ( value < availablePorts.length ) {
+				ports.push( availablePorts[ value ] );
+			}
+		} else if ( Object.prototype.toString.call( value ).match( /^\[object MIDI(Input|Output)]$/ ) ) {
+			// A single MIDI port object was provided. Use it.
+			ports.push( value );
+		} else if ( Object.prototype.toString.call( value ) === '[object Array]' ) {
 			// An array of indexes is requested. Add all of them.
-			indexes = input;
-		} else if ( ( typeof input === 'string' && input.toLowerCase() === 'all' ) || input === undefined ) {
+			arrayToResolve = value;
+		} else if ( ( typeof value === 'string' && value.toLowerCase() === 'all' ) || value === undefined ) {
 			// All ports requested. Assign them directly.
-			ports = inputs();
+			ports = availablePorts;
 		}
 		
 		// If there are indexes not saved in ports variable.
-		if ( indexes.length > 0 ) {
-			// Go through each index and add corresponding input to array.
-			for ( i = 0; i < length; i++ ) {
-				// Make sure that input exists.
-				if ( typeof indexes[ i ] === 'number' && indexes[ i ] < length ) {
-					ports.push( MIDIInputs[ indexes[ i ] ] );
+		if ( arrayToResolve.length > 0 ) {
+			// Go through each index and add corresponding port to array.
+			for ( i = 0; i < arrayToResolve.length; i++ ) {
+				if ( typeof arrayToResolve[ i ] === 'number' ) {
+					// Array index. Make sure that the port exists.
+					if ( arrayToResolve[ i ] < availablePorts.length ) {
+						ports.push( availablePorts[ value ] );
+					}
+				} else if ( Object.prototype.toString.call( arrayToResolve[ i ] ).match( /^\[object MIDI(Input|Output)]$/ ) ) {
+					// A MIDI port object.
+					ports.push( value );
 				}
 			}
 		}
 		
-		// Return all ports.
-		return ports;
-	}
-	
-	/**
-	 * Resolve ports from requested output.
-	 * 
-	 * @param input mixed Output ports to resolve.
-	 * @return array Resolved ports, or empty array.
-	 */
-	function getOutputPorts( output ) {
-		var indexes = [],
-			ports = [],
-			MIDIOutputs = outputs(),
-			length = MIDIOutputs.length,
-			i;
-		
-		if ( typeof output === 'number' ) {
-			// A single index is requested. Make Array from it.
-			indexes = [ output ];
-		} else if ( Object.prototype.toString.call( output ) === '[object Array]' ) {
-			// An array of indexes is requested. Add all of them.
-			indexes = output;
-		} else if ( typeof output === 'string' && output.toLowerCase() === 'all' ) {
-			// All ports requested. Assign them directly.
-			ports = outputs();
-		}
-		
-		// If there are indexes not saved in ports variable.
-		if ( indexes.length > 0 ) {
-			// Go through each index and add corresponding input to array.
-			for ( i = 0; i < length; i++ ) {
-				// Make sure that input exists.
-				if ( typeof indexes[ i ] === 'number' && indexes[ i ] < length ) {
-					ports.push( MIDIOutputs[ indexes[ i ] ] );
-				}
-			}
-		}
-		
-		// Return all ports.
+		// Return resolved ports.
 		return ports;
 	}
 	
@@ -265,7 +235,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @param timestamp integer Timestamp when message should be sent.
 	 */
 	function send( output, messages, timestamp ) {
-		var ports = getOutputPorts( output ),
+		var ports = outputs( output ),
 			i,
 			j;
 		
