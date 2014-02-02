@@ -36,9 +36,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @return array All available MIDI inputs.
 	 */
 	function inputs( input ) {
-		inputPorts = getPorts( 'input', input );
-		
-		return inputPorts;
+		return getPorts( 'input', input );
 	}
 	
 	/**
@@ -48,9 +46,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @return array All available MIDI inputs.
 	 */
 	function outputs( output ) {
-		outputPorts = getPorts( 'output', output );
-		
-		return outputPorts;
+		return getPorts( 'output', output );
 	}
 	
 	/**
@@ -167,7 +163,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @return array Resolved ports, or empty array.
 	 */
 	function getPorts( type, value ) {
-		var availablePorts = ( type === 'output' ? MIDIAccess.outputs() : MIDIAccess.inputs() ),
+		var availablePorts = ( type === 'output' ? outputPorts : inputPorts ),
 			arrayToResolve = [],
 			ports = [],
 			i;
