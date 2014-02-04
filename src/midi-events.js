@@ -88,7 +88,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 */
 	function portListener( midiEvent ) {
 		var message = {
-				port: resolveInputPort( midiEvent.target.id ),
+				port: resolveInputPort( 'id', midiEvent.target.id ),
 				type: 'unsupported',
 				channel: 0
 			};
@@ -205,20 +205,50 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	}
 	
 	/**
-	 * Resolve port from requested id.
+	 * Resolve input port from requested property.
 	 * 
-	 * @param id integer ID of MIDI port to resolve.
+	 * @param property string Property of MIDI port to compare.
+	 * @param value mixed Value of property to match.
 	 * @return integer Resolved port.
 	 */
-	function resolveInputPort( id ) {
-		var i,
-			length = inputPorts.length;
+	function resolveInputPort( property, value ) {
+		return resolvePort( 'input', property, value );
+	}
+	
+	/**
+	 * Resolve output port from requested property.
+	 * 
+	 * @param property string Property of MIDI port to compare.
+	 * @param value mixed Value of property to match.
+	 * @return integer Resolved port.
+	 */
+	function resolveOutputPort( property, value ) {
+		return resolvePort( 'output', property, value );
+	}
+	
+	/**
+	 * Resolve port from requested property.
+	 * 
+	 * @param type string Type of port to resolve.
+	 * @param property string Property of MIDI port to compare.
+	 * @param value mixed Value of property to match.
+	 * @return integer Resolved port.
+	 */
+	function resolvePort( type, property, value ) {
+		var availablePorts = ( type === 'output' ? outputPorts : inputPorts ),
+			length = availablePorts.length,
+			i;
 		
+		// Go through each port and compare property.
 		for ( i = 0; i < length; i++ ) {
-			if ( inputPorts[ i ].id === id ) {
+			// Check if port has the property and if it matches the request.
+			if ( availablePorts[ i ].hasOwnProperty( property ) && availablePorts[ i ][ property ] === value ) {
 				return i;
 			}
 		}
+		
+		// Return -1 if no port matched.
+		return -1;
 	}
 	
 	/**
@@ -287,6 +317,8 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 		listen: listen,
 		unlisten: unlisten,
 		send: send,
+		resolveInputPort: resolveInputPort,
+		resolveOutputPort: resolveOutputPort,
 		
 		// Handling devices.
 		createDevice: createDevice,
