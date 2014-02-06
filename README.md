@@ -46,8 +46,10 @@ require( [ 'midi-events' ], function( midi ) {
 * `listen( ports )`: Listen for messages on one or more ports.
 * `unlisten( ports )`: Stop listening on one or more ports.
 * `send( ports, messages, timestamp )`: Send one or more messages to one or multiple ports. Optionally at a specific time.
-* `on( message, callback )`: Register a callback for when a type of MIDID message is received.
+* `on( message, callback )`: Register a callback for when a type of MIDI message is received.
 * `off( handle )`: Remove previously registered callback.
+* `resolveInputPort( property, value )`: Return number of a input port with matching property.
+* `resolveOutputPort( property, value )`: Return number of a output port with matching property.
 
 ### Events
 
