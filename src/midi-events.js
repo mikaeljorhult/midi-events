@@ -232,23 +232,24 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 * @param type string Type of port to resolve.
 	 * @param property string Property of MIDI port to compare.
 	 * @param value mixed Value of property to match.
-	 * @return integer Resolved port.
+	 * @return array Resolved ports.
 	 */
 	function resolvePort( type, property, value ) {
 		var availablePorts = ( type === 'output' ? outputPorts : inputPorts ),
 			length = availablePorts.length,
+			resolvedPorts = [],
 			i;
 		
 		// Go through each port and compare property.
 		for ( i = 0; i < length; i++ ) {
 			// Check if port has the property and if it matches the request.
 			if ( availablePorts[ i ].hasOwnProperty( property ) && availablePorts[ i ][ property ] === value ) {
-				return i;
+				resolvedPorts.push( availablePorts[ i ] );
 			}
 		}
 		
-		// Return -1 if no port matched.
-		return -1;
+		// Return resolved ports.
+		return resolvedPorts;
 	}
 	
 	/**
