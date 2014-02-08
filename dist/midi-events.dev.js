@@ -1,5 +1,5 @@
 /*!
- * MIDI Events 0.1.8
+ * MIDI Events 0.2.0
  * 
  * @author Mikael Jorhult 
  * @license https://github.com/mikaeljorhult/midi-events MIT
@@ -94,7 +94,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	 */
 	function portListener( midiEvent ) {
 		var message = {
-				port: resolveInputPort( midiEvent.target.id ),
+				port: resolveInputPort( 'id', midiEvent.target.id ),
 				type: 'unsupported',
 				channel: 0
 			};
@@ -201,7 +201,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 					}
 				} else if ( Object.prototype.toString.call( arrayToResolve[ i ] ).match( /^\[object MIDI(Input|Output)]$/ ) ) {
 					// A MIDI port object.
-					ports.push( value );
+					ports.push( arrayToResolve[ i ] );
 				}
 			}
 		}
@@ -211,20 +211,51 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 	}
 	
 	/**
-	 * Resolve port from requested id.
+	 * Resolve input port from requested property.
 	 * 
-	 * @param id integer ID of MIDI port to resolve.
+	 * @param property string Property of MIDI port to compare.
+	 * @param value mixed Value of property to match.
 	 * @return integer Resolved port.
 	 */
-	function resolveInputPort( id ) {
-		var i,
-			length = inputPorts.length;
+	function resolveInputPort( property, value ) {
+		return resolvePort( 'input', property, value );
+	}
+	
+	/**
+	 * Resolve output port from requested property.
+	 * 
+	 * @param property string Property of MIDI port to compare.
+	 * @param value mixed Value of property to match.
+	 * @return integer Resolved port.
+	 */
+	function resolveOutputPort( property, value ) {
+		return resolvePort( 'output', property, value );
+	}
+	
+	/**
+	 * Resolve port from requested property.
+	 * 
+	 * @param type string Type of port to resolve.
+	 * @param property string Property of MIDI port to compare.
+	 * @param value mixed Value of property to match.
+	 * @return array Resolved ports.
+	 */
+	function resolvePort( type, property, value ) {
+		var availablePorts = ( type === 'output' ? outputPorts : inputPorts ),
+			length = availablePorts.length,
+			resolvedPorts = [],
+			i;
 		
+		// Go through each port and compare property.
 		for ( i = 0; i < length; i++ ) {
-			if ( inputPorts[ i ].id === id ) {
-				return i;
+			// Check if port has the property and if it matches the request.
+			if ( availablePorts[ i ].hasOwnProperty( property ) && availablePorts[ i ][ property ] === value ) {
+				resolvedPorts.push( availablePorts[ i ] );
 			}
 		}
+		
+		// Return resolved ports.
+		return resolvedPorts;
 	}
 	
 	/**
@@ -293,6 +324,8 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 		listen: listen,
 		unlisten: unlisten,
 		send: send,
+		resolveInputPort: resolveInputPort,
+		resolveOutputPort: resolveOutputPort,
 		
 		// Handling devices.
 		createDevice: createDevice,
