@@ -195,7 +195,7 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 					}
 				} else if ( Object.prototype.toString.call( arrayToResolve[ i ] ).match( /^\[object MIDI(Input|Output)]$/ ) ) {
 					// A MIDI port object.
-					ports.push( value );
+					ports.push( arrayToResolve[ i ] );
 				}
 			}
 		}
