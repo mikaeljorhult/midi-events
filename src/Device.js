@@ -60,7 +60,7 @@ define( [ 'require', 'PubSub' ], function( require, PubSub ) {
 		
 		// Unsubscribe to events on each device port.
 		for ( i = 0; i < length; i++ ) {
-			PubSub.off( PubSub.on( 'port:' + this.inputs[ i ], callback ) );
+			PubSub.off( PubSub.on( 'id:' + this.inputs[ i ].id, callback ) );
 		}
 		
 		// Return this to make methods chainable.
