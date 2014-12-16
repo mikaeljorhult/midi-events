@@ -1,5 +1,5 @@
 /*!
- * MIDI Events 0.2.0
+ * MIDI Events 0.2.1
  * 
  * @author Mikael Jorhult 
  * @license https://github.com/mikaeljorhult/midi-events MIT
@@ -16,16 +16,17 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 		outputPorts = [];
 	
 	/**
-	 * Get all input ports.
+	 * Request access to MIDI devices.
 	 * 
 	 * @param callback function Callback to run when access to MIDI has been established.
 	 */
 	function connect( callback ) {
-		// Request access to MIDI I/O.
 		requestMIDI.then( function( access ) {
 			MIDIAccess = access;
-			inputPorts = MIDIAccess.inputs();
-			outputPorts = MIDIAccess.outputs();
+			
+			// Cache inputs and outputs.
+			inputPorts = portIterator( MIDIAccess.inputs.values() );
+			outputPorts = portIterator( MIDIAccess.outputs.values() );
 			
 			// Trigger event.
 			PubSub.trigger( 'connected' );
@@ -300,6 +301,23 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 				], timestamp === undefined ? window.performance.now() : timestamp );
 			}
 		}
+	}
+	
+	/**
+	 * Go through iterator and return values as an array.
+	 * 
+	 * @param iterator object ES6 iterator.
+	 */
+	function portIterator( iterator ) {
+		var returnArray = [],
+			entry;
+		
+		// Add value to array as long as there are more items.
+		while ( !( entry = iterator.next() ).done ) {
+			returnArray.push( entry.value );
+		}
+		
+		return returnArray;
 	}
 	
 	/**
