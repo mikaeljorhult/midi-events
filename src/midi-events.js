@@ -323,6 +323,33 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 		console.log( error );
 	}
 	
+	/**
+	 * Shorthand for attaching note on listener.
+	 * 
+	 * @param callback function Function to attach to event.
+	 */
+	function noteon( callback ) {
+		PubSub.on( 'noteon', callback );
+	}
+	
+	/**
+	 * Shorthand for attaching note off listener.
+	 * 
+	 * @param callback function Function to attach to event.
+	 */
+	function noteoff( callback ) {
+		PubSub.on( 'noteoff', callback );
+	}
+	
+	/**
+	 * Shorthand for attaching controller listener.
+	 * 
+	 * @param callback function Function to attach to event.
+	 */
+	function controller( callback ) {
+		PubSub.on( 'controller', callback );
+	}
+	
 	function createDevice( input, output ) {
 		return new Device( input, output );
 	}
@@ -344,7 +371,12 @@ define( [ 'Device', 'PubSub' ], function( Device, PubSub ) {
 		
 		// Add PubSub methods.
 		on: PubSub.on,
-		off: PubSub.off
+		off: PubSub.off,
+		
+		// Shorthands for listeners.
+		noteon: noteon,
+		noteoff: noteoff,
+		controller: controller
 	};
 	
 	// Return object with public methods.
