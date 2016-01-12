@@ -1,11 +1,13 @@
 'use strict';
 
-var gulp       = require('gulp'),
-    browserify = require('browserify'),
-    babelify   = require('babelify'),
-    source     = require('vinyl-source-stream'),
-    concat     = require('gulp-concat'),
-    uglify     = require('gulp-uglify');
+var gulp        = require('gulp'),
+    browserify  = require('browserify'),
+    babelify    = require('babelify'),
+    source      = require('vinyl-source-stream'),
+    concat      = require('gulp-concat'),
+    uglify      = require('gulp-uglify'),
+    insert      = require('gulp-insert'),
+    packageJSON = require('./package.json');
 
 gulp.task('build', function () {
   return browserify({
@@ -26,10 +28,16 @@ gulp.task('minify', ['build'], function () {
     .pipe(gulp.dest('dist'));
 });
 
+gulp.task('license', ['build', 'minify'], function () {
+  gulp.src('dist/**/*.js')
+    .pipe(insert.prepend('/*!\n * MIDI Events ' + packageJSON.version + '\n *\n * @author Mikael Jorhult\n * @license https://github.com/mikaeljorhult/midi-events MIT\n */\n'))
+    .pipe(gulp.dest('dist'));
+});
+
 gulp.task('watch', ['build'], function () {
   gulp.watch('*.js', ['build']);
 });
 
-gulp.task('release', ['build', 'minify'])
+gulp.task('release', ['build', 'minify', 'license'])
 
 gulp.task('default', ['build']);
