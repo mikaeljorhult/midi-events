@@ -11,10 +11,10 @@ var gulp        = require('gulp'),
 
 gulp.task('build', function () {
   return browserify({
-    entries: './src/main.js',
-    extensions: ['.js'],
-    standalone: 'midiEvents'
-  })
+      entries: './src/main.js',
+      extensions: ['.js'],
+      standalone: 'midiEvents'
+    })
     .transform(babelify)
     .bundle()
     .pipe(source('midi-events.js'))
