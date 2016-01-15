@@ -10,4 +10,12 @@ describe('main.js', function () {
     expect(midiEvents).to.have.property('supported');
     expect(midiEvents.supported).to.be.a('boolean');
   });
+
+  it('should emit connected event when connect', function (done) {
+    midiEvents.on('connected', function() {
+      done();
+    });
+
+    midiEvents.connect();
+  });
 })
