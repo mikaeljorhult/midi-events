@@ -206,7 +206,7 @@ function connect(callback) {
     listen();
 
     // Trigger event.
-    PubSub.trigger('connected');
+    PubSub.trigger('enabled');
 
     // Trigger callback.
     if (typeof callback === 'function') {

@@ -29,7 +29,7 @@ function connect(callback) {
     listen();
 
     // Trigger event.
-    PubSub.trigger('connected');
+    PubSub.trigger('enabled');
 
     // Trigger callback.
     if (typeof callback === 'function') {
@@ -93,7 +93,7 @@ function unlisten(input) {
 /**
  * Handle event sent from MIDI port.
  *
- * @param midiEvent object Event sent from MIDI port.
+ * @param event object Event sent from MIDI port.
  */
 function portListener(event) {
   var message = {
