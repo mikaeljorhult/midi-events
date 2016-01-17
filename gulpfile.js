@@ -40,4 +40,6 @@ gulp.task('watch', ['build'], function () {
 
 gulp.task('release', ['build', 'minify', 'license'])
 
-gulp.task('default', ['build']);
+gulp.task('default', ['build'], function() {
+  gulp.watch(['src/**/*.js'], ['build']);
+});
