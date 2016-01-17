@@ -25,6 +25,9 @@ function connect(callback) {
     inputPorts = portIterator(MIDIAccess.inputs.values());
     outputPorts = portIterator(MIDIAccess.outputs.values());
 
+    // Listen for MIDI messages.
+    listen();
+
     // Trigger event.
     PubSub.trigger('connected');
 
@@ -92,64 +95,64 @@ function unlisten(input) {
  *
  * @param midiEvent object Event sent from MIDI port.
  */
-function portListener(midiEvent) {
+function portListener(event) {
   var message = {
-    port: resolveInputPort('id', midiEvent.target.id),
+    port: resolveInputPort('id', event.target.id),
     type: 'unsupported',
     channel: 0
   };
 
   // Add note and value.
-  message.note = midiEvent.data[1];
-  message.value = midiEvent.data[2];
+  message.note = event.data[1];
+  message.value = event.data[2];
 
   // Include original event.
-  message.originalEvent = midiEvent;
+  message.originalEvent = event;
 
   // Determine type of message and channel it was sent on.
   switch (true) {
     // Lower than 128 is not a supported message.
-    case ( midiEvent.data[0] < 128 ):
+    case ( event.data[0] < 128 ):
       break;
 
     // 128 - 143 represent note off on each of the 16 channels.
-    case ( midiEvent.data[0] < 144 || ( midiEvent.data[0] < 160 && midiEvent.data[2] === 0 ) ):
+    case ( event.data[0] < 144 || ( event.data[0] < 160 && event.data[2] === 0 ) ):
       message.type = 'noteoff';
-      message.channel = midiEvent.data[0] - ( midiEvent.data[0] > 143 ? 144 : 128 );
+      message.channel = event.data[0] - ( event.data[0] > 143 ? 144 : 128 );
       break;
 
     // 144 - 159 represent note on on each of the 16 channels.
-    case ( midiEvent.data[0] < 160 ):
+    case ( event.data[0] < 160 ):
       message.type = 'noteon';
-      message.channel = midiEvent.data[0] - 144;
+      message.channel = event.data[0] - 144;
       break;
 
     // 160 - 176 represent aftertouch on each of the 16 channels.
-    case ( midiEvent.data[0] < 176 ):
+    case ( event.data[0] < 176 ):
       message.type = 'polyphonic-aftertouch';
-      message.channel = midiEvent.data[0] - 160;
+      message.channel = event.data[0] - 160;
       break;
 
     // 176 - 191 represent controller messages on each of the 16 channels.
-    case ( midiEvent.data[0] < 192 ):
+    case ( event.data[0] < 192 ):
       message.type = 'controller';
-      message.channel = midiEvent.data[0] - 176;
+      message.channel = event.data[0] - 176;
       break;
 
     // 192 - 207 represent control change messages on each of the 16 channels.
-    case ( midiEvent.data[0] < 208 ):
+    case ( event.data[0] < 208 ):
       message.type = 'controlchange';
-      message.channel = midiEvent.data[0] - 192;
+      message.channel = event.data[0] - 192;
       message.note = 0;
-      message.value = midiEvent.data[1];
+      message.value = event.data[1];
       break;
 
     // 208 - 223 represent channel aftertouch on each of the 16 channels.
-    case ( midiEvent.data[0] < 224 ):
+    case ( event.data[0] < 224 ):
       message.type = 'aftertouch';
-      message.channel = midiEvent.data[0] - 208;
+      message.channel = event.data[0] - 208;
       message.note = 0;
-      message.value = midiEvent.data[1];
+      message.value = event.data[1];
       break;
   }
 
@@ -158,8 +161,8 @@ function portListener(midiEvent) {
   PubSub.trigger(message.type, [message]);
   PubSub.trigger(message.type + ':' + message.note, [message]);
   PubSub.trigger('port:' + message.port, [message]);
-  PubSub.trigger('id:' + midiEvent.target.id, [message]);
-  PubSub.trigger('id:' + midiEvent.target.id + ':' + message.type, [message]);
+  PubSub.trigger('id:' + event.target.id, [message]);
+  PubSub.trigger('id:' + event.target.id + ':' + message.type, [message]);
 }
 
 /**
