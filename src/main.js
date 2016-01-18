@@ -6,11 +6,9 @@ var Device = require('./Device'),
 
 // Declare variables.
 var MIDIEvents  = {},
-    supported   = ( !!window.navigator.requestMIDIAccess ),
-    requestMIDI = ( supported ? navigator.requestMIDIAccess() : null ),
-    MIDIAccess  = null,
-    inputPorts  = [],
-    outputPorts = [];
+    supported   = (!!window.navigator.requestMIDIAccess),
+    requestMIDI = (supported ? navigator.requestMIDIAccess() : null),
+    MIDIAccess  = null;
 
 /**
  * Request access to MIDI devices.
@@ -44,21 +42,19 @@ function connect(callback) {
 /**
  * Get input ports.
  *
- * @param output mixed Requested inputs.
  * @return array All available MIDI inputs.
  */
-function inputs(input) {
-  return getPorts('input', input);
+function inputs() {
+  return portIterator(MIDIAccess.inputs.values());
 }
 
 /**
  * Get output ports.
  *
- * @param output mixed Requested outputs.
- * @return array All available MIDI inputs.
+ * @return array All available MIDI outputs.
  */
-function outputs(output) {
-  return getPorts('output', output);
+function outputs() {
+  return portIterator(MIDIAccess.outputs.values());
 }
 
 /**
@@ -263,13 +259,11 @@ function resolveOutputPort(property, value) {
  * @return array Resolved ports.
  */
 function resolvePort(type, property, value) {
-  var availablePorts = ( type === 'output' ? outputPorts : inputPorts ),
-      length         = availablePorts.length,
-      resolvedPorts  = [],
-      i;
+  var availablePorts = (type === 'output' ? outputs() : inputs()),
+      resolvedPorts  = [];
 
   // Go through each port and compare property.
-  for (i = 0; i < length; i++) {
+  for (var i = 0; i < availablePorts.length; i++) {
     // Check if port has the property and if it matches the request.
     if (availablePorts[i].hasOwnProperty(property) && availablePorts[i][property] === value) {
       resolvedPorts.push(availablePorts[i]);
