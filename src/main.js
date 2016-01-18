@@ -59,18 +59,14 @@ function outputs(output) {
 }
 
 /**
- * Setup listeners for specified inputs.
- *
- * @param input mixed Input ports to monitor for messages.
+ * Setup listeners for all MIDI ports.
  */
-function listen(input) {
-  var ports  = inputs(input),
-      length = ports.length,
-      i;
+function listen() {
+  var ports = inputs();
 
   // Attach listener to all requested ports.
-  for (i = 0; i < length; i++) {
-    ports[i].addEventListener('midimessage', portListener, false);
+  for (var i = 0; i < ports.length; i++) {
+    ports[i].addEventListener('midimessage', messageListener, false);
   }
 }
 
@@ -80,13 +76,11 @@ function listen(input) {
  * @param input mixed Input ports to stop monitoring for messages.
  */
 function unlisten(input) {
-  var ports  = inputs(input),
-      length = ports.length,
-      i;
+  var ports = inputs(input);
 
   // Attach listener to all requested ports.
-  for (i = 0; i < length; i++) {
-    ports[i].removeEventListener('midimessage', portListener, false);
+  for (var i = 0; i < ports.length; i++) {
+    ports[i].removeEventListener('midimessage', messageListener, false);
   }
 }
 
@@ -95,7 +89,7 @@ function unlisten(input) {
  *
  * @param event object Event sent from MIDI port.
  */
-function portListener(event) {
+function messageListener(event) {
   var message = {
     port: resolveInputPort('id', event.target.id),
     type: 'unsupported',
@@ -369,7 +363,6 @@ MIDIEvents = {
   connect: connect,
   inputs: inputs,
   outputs: outputs,
-  listen: listen,
   unlisten: unlisten,
   send: send,
   resolveInputPort: resolveInputPort,
