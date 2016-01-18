@@ -28,6 +28,9 @@ function connect(callback) {
     // Listen for MIDI messages.
     listen();
 
+    // Listen for state changes.
+    MIDIAccess.addEventListener('statechange', stateChangeListener, false);
+
     // Trigger event.
     PubSub.trigger('enabled');
 
@@ -160,6 +163,27 @@ function messageListener(event) {
 }
 
 /**
+ * Handle state change event sent from MIDI access object.
+ *
+ * @param event object Event sent from MIDI port.
+ */
+function stateChangeListener(event) {
+  var message = {
+    port: resolvePort(event.port.type, 'id', event.target.id),
+    type: event.port.state,
+    interface: event.port.type
+  };
+
+  // Include original event.
+  message.originalEvent = event;
+
+  // Trigger events.
+  PubSub.trigger('statechange', [message]);
+  PubSub.trigger(message.type, [message]);
+  PubSub.trigger(message.type + ':' + message.interface, [message]);
+}
+
+/**
  * Resolve requested ports.
  *
  * @param type string Type of ports to resolve.
@@ -213,7 +237,7 @@ function getPorts(type, value) {
  *
  * @param property string Property of MIDI port to compare.
  * @param value mixed Value of property to match.
- * @return integer Resolved port.
+ * @return array Resolved port.
  */
 function resolveInputPort(property, value) {
   return resolvePort('input', property, value);
@@ -224,7 +248,7 @@ function resolveInputPort(property, value) {
  *
  * @param property string Property of MIDI port to compare.
  * @param value mixed Value of property to match.
- * @return integer Resolved port.
+ * @return array Resolved port.
  */
 function resolveOutputPort(property, value) {
   return resolvePort('output', property, value);
@@ -264,9 +288,7 @@ function resolvePort(type, property, value) {
  * @param timestamp integer Timestamp when message should be sent.
  */
 function send(output, messages, timestamp) {
-  var ports = outputs(output),
-      i,
-      j;
+  var ports = outputs(output);
 
   // Convert message to array if needed.
   if (Object.prototype.toString.call(messages) !== '[object Array]') {
@@ -274,7 +296,7 @@ function send(output, messages, timestamp) {
   }
 
   // Go through and check each message type.
-  for (i = 0; i < messages.length; i++) {
+  for (var i = 0; i < messages.length; i++) {
     // Convert string values to numeric.
     switch (messages[i].type) {
       case 'noteon':
@@ -288,8 +310,8 @@ function send(output, messages, timestamp) {
   }
 
   // Send all messages to each requested ports.
-  for (i = 0; i < ports.length; i++) {
-    for (j = 0; j < messages.length; j++) {
+  for (var i = 0; i < ports.length; i++) {
+    for (var j = 0; j < messages.length; j++) {
       // Do the actual sending.
       ports[i].send([
         messages[j].type,
