@@ -19,11 +19,8 @@ function connect(callback) {
   requestMIDI.then(function (access) {
     MIDIAccess = access;
 
-    // Cache inputs and outputs.
-    inputPorts = portIterator(MIDIAccess.inputs.values());
-    outputPorts = portIterator(MIDIAccess.outputs.values());
-
     // Listen for MIDI messages.
+    PubSub.on('connected:input', listen, false);
     listen();
 
     // Listen for state changes.
@@ -70,12 +67,12 @@ function listen() {
 }
 
 /**
- * Remove listeners for specified inputs.
+ * Remove listeners for specified input.
  *
- * @param input mixed Input ports to stop monitoring for messages.
+ * @param id integer Input port to stop monitoring for messages.
  */
-function unlisten(input) {
-  var ports = inputs(input);
+function unlisten(id) {
+  var ports = resolveInputPort('id', id);
 
   // Attach listener to all requested ports.
   for (var i = 0; i < ports.length; i++) {
@@ -90,7 +87,7 @@ function unlisten(input) {
  */
 function messageListener(event) {
   var message = {
-    port: resolveInputPort('id', event.target.id),
+    port: event.target.id,
     type: 'unsupported',
     channel: 0
   };
@@ -105,35 +102,35 @@ function messageListener(event) {
   // Determine type of message and channel it was sent on.
   switch (true) {
     // Lower than 128 is not a supported message.
-    case ( event.data[0] < 128 ):
+    case (event.data[0] < 128):
       break;
 
     // 128 - 143 represent note off on each of the 16 channels.
-    case ( event.data[0] < 144 || ( event.data[0] < 160 && event.data[2] === 0 ) ):
+    case (event.data[0] < 144 || (event.data[0] < 160 && event.data[2] === 0)):
       message.type = 'noteoff';
-      message.channel = event.data[0] - ( event.data[0] > 143 ? 144 : 128 );
+      message.channel = event.data[0] - (event.data[0] > 143 ? 144 : 128);
       break;
 
     // 144 - 159 represent note on on each of the 16 channels.
-    case ( event.data[0] < 160 ):
+    case (event.data[0] < 160):
       message.type = 'noteon';
       message.channel = event.data[0] - 144;
       break;
 
     // 160 - 176 represent aftertouch on each of the 16 channels.
-    case ( event.data[0] < 176 ):
+    case (event.data[0] < 176):
       message.type = 'polyphonic-aftertouch';
       message.channel = event.data[0] - 160;
       break;
 
     // 176 - 191 represent controller messages on each of the 16 channels.
-    case ( event.data[0] < 192 ):
+    case (event.data[0] < 192):
       message.type = 'controller';
       message.channel = event.data[0] - 176;
       break;
 
     // 192 - 207 represent control change messages on each of the 16 channels.
-    case ( event.data[0] < 208 ):
+    case (event.data[0] < 208):
       message.type = 'controlchange';
       message.channel = event.data[0] - 192;
       message.note = 0;
@@ -141,7 +138,7 @@ function messageListener(event) {
       break;
 
     // 208 - 223 represent channel aftertouch on each of the 16 channels.
-    case ( event.data[0] < 224 ):
+    case (event.data[0] < 224):
       message.type = 'aftertouch';
       message.channel = event.data[0] - 208;
       message.note = 0;
@@ -165,7 +162,7 @@ function messageListener(event) {
  */
 function stateChangeListener(event) {
   var message = {
-    port: resolvePort(event.port.type, 'id', event.target.id),
+    port: event.target.id,
     type: event.port.state,
     interface: event.port.type
   };
@@ -177,55 +174,8 @@ function stateChangeListener(event) {
   PubSub.trigger('statechange', [message]);
   PubSub.trigger(message.type, [message]);
   PubSub.trigger(message.type + ':' + message.interface, [message]);
-}
-
-/**
- * Resolve requested ports.
- *
- * @param type string Type of ports to resolve.
- * @param value mixed Ports to resolve.
- * @return array Resolved ports, or empty array.
- */
-function getPorts(type, value) {
-  var availablePorts = ( type === 'output' ? outputPorts : inputPorts ),
-      arrayToResolve = [],
-      ports          = [],
-      i;
-
-  if (typeof value === 'number') {
-    // A single index is requested. Create an array from it.
-    if (value < availablePorts.length) {
-      ports.push(availablePorts[value]);
-    }
-  } else if (Object.prototype.toString.call(value).match(/^\[object MIDI(Input|Output)]$/)) {
-    // A single MIDI port object was provided. Use it.
-    ports.push(value);
-  } else if (Object.prototype.toString.call(value) === '[object Array]') {
-    // An array of indexes is requested. Add all of them.
-    arrayToResolve = value;
-  } else if (( typeof value === 'string' && value.toLowerCase() === 'all' ) || value === undefined) {
-    // All ports requested. Assign them directly.
-    ports = availablePorts;
-  }
-
-  // If there are indexes not saved in ports variable.
-  if (arrayToResolve.length > 0) {
-    // Go through each index and add corresponding port to array.
-    for (i = 0; i < arrayToResolve.length; i++) {
-      if (typeof arrayToResolve[i] === 'number') {
-        // Array index. Make sure that the port exists.
-        if (arrayToResolve[i] < availablePorts.length) {
-          ports.push(availablePorts[value]);
-        }
-      } else if (Object.prototype.toString.call(arrayToResolve[i]).match(/^\[object MIDI(Input|Output)]$/)) {
-        // A MIDI port object.
-        ports.push(arrayToResolve[i]);
-      }
-    }
-  }
-
-  // Return resolved ports.
-  return ports;
+  PubSub.trigger('id:' + event.target.id, [message]);
+  PubSub.trigger('id:' + event.target.id + ':' + message.type, [message]);
 }
 
 /**
@@ -326,7 +276,7 @@ function portIterator(iterator) {
       entry;
 
   // Add value to array as long as there are more items.
-  while (!( entry = iterator.next() ).done) {
+  while (!(entry = iterator.next()).done) {
     returnArray.push(entry.value);
   }
 
