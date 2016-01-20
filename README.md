@@ -1,12 +1,13 @@
 # MIDI Events
 
-Wrapper module to simplify working with Web MIDI API by allowing user to subscribe to events in a 
-jQuery-esque way.
+Wrapper module to simplify working with Web MIDI API by allowing user to subscribe to events.
 
 
 ## Usage
 
-MIDI Events is a module and should be loaded with a script loader, like [RequireJS](http://requirejs.org/).
+MIDI Events may be used as a module for use with for example [Browserify](http://browserify.org/)
+or [RequireJS](http://requirejs.org/). If no script loader is used MIDI Events is available as a
+global object, `midiEvent`.
 
 When loaded you first need to request access to the MIDI interface by calling the method `.connect()`.
 This will trigger the `connected` event when access has been granted and established and you are now
@@ -19,22 +20,19 @@ message is received.
 ### Example
 
 ```javascript
-require( [ 'midi-events' ], function( midi ) {
+require(['midi-events'], function(midi) {
 	midi.connect();
 	
-	midi.on( 'connected', whenConnected );
+	midi.on('connected', whenConnected);
 	
 	function whenConnected() {
-		// Listen to all available MIDI inputs.
-		midi.listen();
-		
 		// Runs when a note on message is received.
-		midi.on( 'noteon', function( message ) {
+		midi.on('noteon', function(message) {
 			// Will output object every time a note on message is received.
-			console.log( message );
-		} );
+			console.log(message);
+		});
 	}
-} );
+});
 ```
 
 ### Properties and Methods
@@ -43,13 +41,12 @@ require( [ 'midi-events' ], function( midi ) {
 * `connect()`: Request access to MIDI ports.
 * `inputs()`: Return array of all available input ports.
 * `outputs()`: Return array of all available output ports.
-* `listen( ports )`: Listen for messages on one or more ports.
-* `unlisten( ports )`: Stop listening on one or more ports.
-* `send( ports, messages, timestamp )`: Send one or more messages to one or multiple ports. Optionally at a specific time.
-* `on( message, callback )`: Register a callback for when a type of MIDI message is received.
-* `off( handle )`: Remove previously registered callback.
-* `resolveInputPort( property, value )`: Return number of a input port with matching property.
-* `resolveOutputPort( property, value )`: Return number of a output port with matching property.
+* `unlisten(ports)`: Stop listening on one or more ports.
+* `send(ports, messages, timestamp)`: Send one or more messages to one or multiple ports. Optionally at a specific time.
+* `on(message, callback)`: Register a callback for when a type of MIDI message is received.
+* `off(handle)`: Remove previously registered callback.
+* `resolveInputPort(property, value)`: Return number of a input port with matching property.
+* `resolveOutputPort(property, value)`: Return number of a output port with matching property.
 
 ### Events
 
@@ -65,7 +62,7 @@ events `message`, `noteoff`, `noteoff:12` and `port:0` are triggered.
 
 #### Message Types
 
-* `connected`: Access to MIDI was granted.
+* `enabled`: Access to MIDI was granted.
 * `message`: Triggered on any type of message.
 * `noteon`: When a note is pressed.
 * `noteoff`: When a note is released.
@@ -91,8 +88,9 @@ of properties.
 
 ## Support
 
-Current specification is supported in Chrome and Chrome Canary if flag for experimental support of
-Web MIDI API([chrome://flags/#enable-web-midi](chrome://flags/#enable-web-midi)) is set to active.
+Current specification [is supported](http://caniuse.com/#feat=midi) natively in latest versions of
+Chrome and Opera. For others browsers the [Web MIDI API Shim](https://github.com/cwilso/WebMIDIAPIShim)
+may be used to polyfill the functionality.
 
 Beware that the [Web MIDI API standard](http://www.w3.org/TR/webmidi/) is still a working draft and
 changes to it and/or to implementations within browsers may break this code at any time.
