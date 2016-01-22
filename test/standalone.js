@@ -16,7 +16,7 @@ describe('main.js', function () {
     expect(midiEvents.connect).to.be.a('function');
 
     // Should be triggered when connect method is called.
-    midiEvents.on('connected', function() {
+    midiEvents.on('enabled', function() {
       done();
     });
 
